@@ -1,9 +1,315 @@
 <!DOCTYPE html>
-<html>
-<head><title>CI/CD Demo</title></head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mestri AI - CI/CD Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .env-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 10px 0;
+        }
+
+        .env-stage {
+            background: #f6a623;
+            color: white;
+        }
+
+        .env-production {
+            background: #28a745;
+            color: white;
+        }
+
+        .features-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .features-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ccc;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card.feature-enabled {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .feature-card.feature-disabled {
+            opacity: 0.5;
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-enabled {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-disabled {
+            background: #dc3545;
+            color: white;
+        }
+
+        .feature-content {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .info-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .info-panel h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .info-panel ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-panel li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-panel li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
 <body>
-  <h1>Hello from GitHub Pages!</h1>
-  <p>This will be deployed to Stage and Production.</p>
-<p>Added feature 1</p>
+    <div class="container">
+        <div class="header">
+            <h1>Mestri AI - CI/CD Feature Flags Demo</h1>
+            <div class="env-badge" id="env-badge">Loading...</div>
+            <p style="margin-top: 15px; color: #666;">
+                This page demonstrates environment-specific feature deployment
+            </p>
+        </div>
+
+        <div class="features-section">
+            <h2>Application Features</h2>
+            <div class="features-grid">
+                <!-- Feature A - Developer 1 -->
+                <div class="feature-card" data-feature="feature_a">
+                    <h3>
+                        User Dashboard
+                        <span class="status-badge status-disabled">Loading...</span>
+                    </h3>
+                    <p><strong>Developer:</strong> Dev 1</p>
+                    <p>Enhanced user dashboard with analytics and customizable widgets.</p>
+                    <div class="feature-content">
+                        <strong>Feature Content:</strong>
+                        <ul style="margin-top: 10px; padding-left: 20px;">
+                            <li>Customizable dashboard widgets</li>
+                            <li>Real-time data updates</li>
+                            <li>Export to PDF/Excel</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Feature B - Developer 2 -->
+                <div class="feature-card" data-feature="feature_b">
+                    <h3>
+                        Advanced Analytics
+                        <span class="status-badge status-disabled">Loading...</span>
+                    </h3>
+                    <p><strong>Developer:</strong> Dev 2</p>
+                    <p>Comprehensive analytics dashboard with advanced reporting capabilities.</p>
+                    <div class="feature-content">
+                        <strong>Feature Content:</strong>
+                        <ul style="margin-top: 10px; padding-left: 20px;">
+                            <li>Custom report builder</li>
+                            <li>Predictive analytics</li>
+                            <li>Data visualization tools</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Feature C - Developer 3 -->
+                <div class="feature-card" data-feature="feature_c">
+                    <h3>
+                        Real-time Notifications
+                        <span class="status-badge status-disabled">Loading...</span>
+                    </h3>
+                    <p><strong>Developer:</strong> Dev 3</p>
+                    <p>Push notifications for real-time updates and critical alerts.</p>
+                    <div class="feature-content">
+                        <strong>Feature Content:</strong>
+                        <ul style="margin-top: 10px; padding-left: 20px;">
+                            <li>Browser push notifications</li>
+                            <li>Custom alert rules</li>
+                            <li>Notification history</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Experimental UI -->
+                <div class="feature-card" data-feature="experimental_ui">
+                    <h3>
+                        Experimental UI
+                        <span class="status-badge status-disabled">Loading...</span>
+                    </h3>
+                    <p><strong>Developer:</strong> Design Team</p>
+                    <p>Modern UI redesign with improved user experience and accessibility.</p>
+                    <div class="feature-content">
+                        <strong>Feature Content:</strong>
+                        <ul style="margin-top: 10px; padding-left: 20px;">
+                            <li>Dark mode support</li>
+                            <li>Accessibility improvements</li>
+                            <li>Modern component library</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>Environment Information</h3>
+            <ul id="feature-list">
+                <li>Loading feature configuration...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="js/featureFlags.js"></script>
+    <script>
+        // Wait for feature flags to load
+        async function updateUI() {
+            // Wait for feature flags to initialize
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Update environment badge
+            const env = window.featureFlags.getEnvironment();
+            const envBadge = document.getElementById('env-badge');
+            envBadge.textContent = env.toUpperCase();
+            envBadge.className = 'env-badge env-' + env;
+
+            // Update feature cards
+            document.querySelectorAll('.feature-card').forEach(card => {
+                const featureName = card.getAttribute('data-feature');
+                const badge = card.querySelector('.status-badge');
+                const isEnabled = window.featureFlags.isEnabled(featureName);
+
+                if (isEnabled) {
+                    card.classList.add('feature-enabled');
+                    card.classList.remove('feature-disabled');
+                    badge.textContent = 'ENABLED';
+                    badge.className = 'status-badge status-enabled';
+                } else {
+                    card.classList.add('feature-disabled');
+                    card.classList.remove('feature-enabled');
+                    badge.textContent = 'DISABLED';
+                    badge.className = 'status-badge status-disabled';
+                }
+            });
+
+            // Update feature list
+            const featureList = document.getElementById('feature-list');
+            const allFeatures = window.featureFlags.getAllFeatures();
+            const enabledFeatures = window.featureFlags.getEnabledFeatures();
+
+            if (Object.keys(allFeatures).length === 0) {
+                featureList.innerHTML = '<li>No features configured</li>';
+                return;
+            }
+
+            featureList.innerHTML = `
+                <li><strong>Environment:</strong> ${env.toUpperCase()}</li>
+                <li><strong>Total Features:</strong> ${Object.keys(allFeatures).length}</li>
+                <li><strong>Enabled Features:</strong> ${enabledFeatures.length}</li>
+                <li><strong>Active:</strong> ${enabledFeatures.join(', ') || 'None'}</li>
+            `;
+        }
+
+        // Update UI when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateUI);
+        } else {
+            updateUI();
+        }
+    </script>
 </body>
 </html>
