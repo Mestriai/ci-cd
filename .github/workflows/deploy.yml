@@ -13,13 +13,9 @@ permissions:
   id-token: write
 
 jobs:
-  # Job 1: Build and deploy to Stage
-  deploy-stage:
+  # Job 1: Build the application artifact
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: Stage
-      url: ${{ steps.pages.outputs.base_url }}/stage/
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,12 +24,15 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      # Create stage directory structure
-      - name: Prepare Stage deployment
+      # Build the site with both stage and production directories
+      - name: Build site structure
         run: |
-          mkdir -p _site/stage
+          mkdir -p _site/stage _site/production
+          # Copy content to stage directory
           cp -r ./* _site/stage/ 2>/dev/null || true
-          # Create index redirect at root for easy navigation
+          # Remove the _site directory from stage to avoid recursion
+          rm -rf _site/stage/_site
+          # Create landing page
           cat > _site/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
@@ -49,34 +48,45 @@ jobs:
               .env-links a:hover { background: #0256b9; }
               .stage { background: #f6a623; }
               .stage:hover { background: #e09412; }
+              .production { background: #28a745; }
+              .production:hover { background: #218838; }
             </style>
           </head>
           <body>
             <h1>Mestri Test - Deployment Environments</h1>
             <ul class="env-links">
               <li><a href="./stage/" class="stage">Stage Environment</a></li>
-              <li><a href="./production/">Production Environment</a></li>
+              <li><a href="./production/" class="production">Production Environment</a></li>
             </ul>
           </body>
           </html>
           EOF
 
-      - name: Upload Stage artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '_site'
 
-      - name: Deploy to GitHub Pages (Stage)
+  # Job 2: Deploy to Stage Environment
+  deploy-stage:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: Stage
+      url: ${{ steps.deployment.outputs.page_url }}stage/
+
+    steps:
+      - name: Deploy to Pages (Stage)
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # Job 2: Deploy to Production (requires manual approval and deploys to /production path)
+  # Job 3: Update production directory and redeploy
   deploy-production:
     needs: deploy-stage
     runs-on: ubuntu-latest
     environment:
       name: Production
-      url: ${{ steps.pages.outputs.base_url }}/production/
+      url: ${{ steps.deployment.outputs.page_url }}production/
 
     steps:
       - name: Checkout code
@@ -86,12 +96,16 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      # Download the current Pages deployment and add production
-      - name: Prepare Production deployment
+      # Rebuild with production content added
+      - name: Build with production
         run: |
-          mkdir -p _site/production
+          mkdir -p _site/stage _site/production
+          # Copy content to both directories
+          cp -r ./* _site/stage/ 2>/dev/null || true
           cp -r ./* _site/production/ 2>/dev/null || true
-          # Recreate the index page (in case it doesn't exist from stage)
+          # Remove the _site directory from copies to avoid recursion
+          rm -rf _site/stage/_site _site/production/_site
+          # Recreate landing page
           cat > _site/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
@@ -107,23 +121,25 @@ jobs:
               .env-links a:hover { background: #0256b9; }
               .stage { background: #f6a623; }
               .stage:hover { background: #e09412; }
+              .production { background: #28a745; }
+              .production:hover { background: #218838; }
             </style>
           </head>
           <body>
             <h1>Mestri Test - Deployment Environments</h1>
             <ul class="env-links">
               <li><a href="./stage/" class="stage">Stage Environment</a></li>
-              <li><a href="./production/">Production Environment</a></li>
+              <li><a href="./production/" class="production">Production Environment</a></li>
             </ul>
           </body>
           </html>
           EOF
 
-      - name: Upload Production artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '_site'
 
-      - name: Deploy to GitHub Pages (Production)
+      - name: Deploy to Pages (Production)
         id: deployment
         uses: actions/deploy-pages@v4
