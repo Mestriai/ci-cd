@@ -28,26 +28,36 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
+      - name: Setup Node.js for YAML processing
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install js-yaml for config conversion
+        run: npm install -g js-yaml
+
       - name: Build both environments (Stage active, Production placeholder)
         run: |
           # Create both directories
           mkdir -p _site/stage _site/production
 
           # Copy content to STAGE (this job owns stage)
-          cp -r ./* _site/stage/ 2>/dev/null || true
-          rm -rf _site/stage/_site
+          # Exclude api/, node_modules, and build artifacts
+          rsync -av --exclude='_site' --exclude='api' --exclude='node_modules' --exclude='.git' ./ _site/stage/
 
-          # Apply stage-specific feature flag config
+          # Apply stage-specific feature flag config - Convert YAML to JSON for web client
           mkdir -p _site/stage/config
-          cp config/features.stage.json _site/stage/config/features.json 2>/dev/null || true
+          js-yaml config/features.stage.yml > _site/stage/config/features.json
+          cp config/features.stage.yml _site/stage/config/ 2>/dev/null || true
 
           # Create PRODUCTION placeholder (will be updated by production job)
-          cp -r ./* _site/production/ 2>/dev/null || true
-          rm -rf _site/production/_site
+          # Exclude api/, node_modules, and build artifacts
+          rsync -av --exclude='_site' --exclude='api' --exclude='node_modules' --exclude='.git' ./ _site/production/
 
-          # Apply production config to placeholder
+          # Apply production config to placeholder - Convert YAML to JSON
           mkdir -p _site/production/config
-          cp config/features.production.json _site/production/config/features.json 2>/dev/null || true
+          js-yaml config/features.prod.yml > _site/production/config/features.json
+          cp config/features.prod.yml _site/production/config/ 2>/dev/null || true
 
           # Create/Update landing page
           cat > _site/index.html << 'EOF'
@@ -110,26 +120,36 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
+      - name: Setup Node.js for YAML processing
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install js-yaml for config conversion
+        run: npm install -g js-yaml
+
       - name: Build both environments (Production active, Stage preserved)
         run: |
           # Create both directories
           mkdir -p _site/stage _site/production
 
           # Copy content to STAGE (preserved from previous deployment)
-          cp -r ./* _site/stage/ 2>/dev/null || true
-          rm -rf _site/stage/_site
+          # Exclude api/, node_modules, and build artifacts
+          rsync -av --exclude='_site' --exclude='api' --exclude='node_modules' --exclude='.git' ./ _site/stage/
 
-          # Apply stage config (keep stage working)
+          # Apply stage config (keep stage working) - Convert YAML to JSON
           mkdir -p _site/stage/config
-          cp config/features.stage.json _site/stage/config/features.json 2>/dev/null || true
+          js-yaml config/features.stage.yml > _site/stage/config/features.json
+          cp config/features.stage.yml _site/stage/config/ 2>/dev/null || true
 
           # Copy content to PRODUCTION (this job owns production)
-          cp -r ./* _site/production/ 2>/dev/null || true
-          rm -rf _site/production/_site
+          # Exclude api/, node_modules, and build artifacts
+          rsync -av --exclude='_site' --exclude='api' --exclude='node_modules' --exclude='.git' ./ _site/production/
 
-          # Apply production-specific feature flag config
+          # Apply production-specific feature flag config - Convert YAML to JSON
           mkdir -p _site/production/config
-          cp config/features.production.json _site/production/config/features.json 2>/dev/null || true
+          js-yaml config/features.prod.yml > _site/production/config/features.json
+          cp config/features.prod.yml _site/production/config/ 2>/dev/null || true
 
           # Update landing page
           cat > _site/index.html << 'EOF'

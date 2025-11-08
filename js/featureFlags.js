@@ -30,7 +30,9 @@ class FeatureFlagManager {
     }
 
     try {
-      // Load the environment-specific config (already copied during deployment)
+      // Load the environment-specific config
+      // Source: YAML files (features.stage.yml, features.prod.yml)
+      // Converted to JSON during deployment pipeline for web client consumption
       const configPath = `config/features.json`;
       const response = await fetch(configPath);
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mestri AI - CI/CD Demo</title>
+    <title>Trunk-Based Development Demo - Mestri AI</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -57,7 +57,7 @@
             color: white;
         }
 
-        .features-section {
+        .tasks-section {
             background: white;
             padding: 30px;
             border-radius: 12px;
@@ -65,71 +65,149 @@
             margin-bottom: 20px;
         }
 
-        .features-section h2 {
+        .tasks-section h2 {
             color: #333;
             margin-bottom: 20px;
         }
 
-        .features-grid {
+        .task-form {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        .feature-card {
+        .task-form input, .task-form select, .task-form button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .task-form button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .task-form button:hover {
+            background: #5568d3;
+        }
+
+        .feature-section {
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
+            margin-bottom: 20px;
             border-left: 4px solid #ccc;
-            transition: all 0.3s ease;
         }
 
-        .feature-card.feature-enabled {
+        .feature-section.feature-enabled {
             border-left-color: #28a745;
             background: #d4edda;
         }
 
-        .feature-card.feature-disabled {
+        .feature-section.feature-disabled {
             opacity: 0.5;
+            pointer-events: none;
         }
 
-        .feature-card h3 {
-            color: #333;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .feature-card p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-
-        .status-badge {
+        .feature-label {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: bold;
+            margin-left: 10px;
         }
 
-        .status-enabled {
+        .feature-label.enabled {
             background: #28a745;
             color: white;
         }
 
-        .status-disabled {
+        .feature-label.disabled {
             background: #dc3545;
             color: white;
         }
 
-        .feature-content {
-            margin-top: 15px;
-            padding: 15px;
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
             background: white;
+            padding: 15px;
             border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .task-item.completed {
+            border-left-color: #28a745;
+            opacity: 0.7;
+        }
+
+        .task-item h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .task-item p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .tag {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .search-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .info-panel {
@@ -146,7 +224,6 @@
 
         .info-panel ul {
             list-style: none;
-            padding-left: 0;
         }
 
         .info-panel li {
@@ -157,159 +234,333 @@
         .info-panel li:last-child {
             border-bottom: none;
         }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Mestri AI - CI/CD Feature Flags Demo</h1>
+            <h1>Trunk-Based Development Demo</h1>
             <div class="env-badge" id="env-badge">Loading...</div>
             <p style="margin-top: 15px; color: #666;">
-                This page demonstrates environment-specific feature deployment
+                Task Manager with Feature Flags - No Merge Hell!
             </p>
         </div>
 
-        <div class="features-section">
-            <h2>Application Features</h2>
-            <div class="features-grid">
-                <!-- Feature A - Developer 1 -->
-                <div class="feature-card" data-feature="feature_a">
-                    <h3>
-                        User Dashboard
-                        <span class="status-badge status-disabled">Loading...</span>
-                    </h3>
-                    <p><strong>Developer:</strong> Dev 1</p>
-                    <p>Enhanced user dashboard with analytics and customizable widgets.</p>
-                    <div class="feature-content">
-                        <strong>Feature Content:</strong>
-                        <ul style="margin-top: 10px; padding-left: 20px;">
-                            <li>Customizable dashboard widgets</li>
-                            <li>Real-time data updates</li>
-                            <li>Export to PDF/Excel</li>
-                        </ul>
-                    </div>
-                </div>
+        <!-- Base Task Manager (Always Available) -->
+        <div class="tasks-section">
+            <h2>Task Manager <span class="feature-label enabled">BASE FEATURE</span></h2>
+            <p style="color: #666; margin-bottom: 20px;">Core functionality - always available in all environments</p>
 
-                <!-- Feature B - Developer 2 -->
-                <div class="feature-card" data-feature="feature_b">
-                    <h3>
-                        Advanced Analytics
-                        <span class="status-badge status-disabled">Loading...</span>
-                    </h3>
-                    <p><strong>Developer:</strong> Dev 2</p>
-                    <p>Comprehensive analytics dashboard with advanced reporting capabilities.</p>
-                    <div class="feature-content">
-                        <strong>Feature Content:</strong>
-                        <ul style="margin-top: 10px; padding-left: 20px;">
-                            <li>Custom report builder</li>
-                            <li>Predictive analytics</li>
-                            <li>Data visualization tools</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Feature C - Developer 3 -->
-                <div class="feature-card" data-feature="feature_c">
-                    <h3>
-                        Real-time Notifications
-                        <span class="status-badge status-disabled">Loading...</span>
-                    </h3>
-                    <p><strong>Developer:</strong> Dev 3</p>
-                    <p>Push notifications for real-time updates and critical alerts.</p>
-                    <div class="feature-content">
-                        <strong>Feature Content:</strong>
-                        <ul style="margin-top: 10px; padding-left: 20px;">
-                            <li>Browser push notifications</li>
-                            <li>Custom alert rules</li>
-                            <li>Notification history</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Experimental UI -->
-                <div class="feature-card" data-feature="experimental_ui">
-                    <h3>
-                        Experimental UI
-                        <span class="status-badge status-disabled">Loading...</span>
-                    </h3>
-                    <p><strong>Developer:</strong> Design Team</p>
-                    <p>Modern UI redesign with improved user experience and accessibility.</p>
-                    <div class="feature-content">
-                        <strong>Feature Content:</strong>
-                        <ul style="margin-top: 10px; padding-left: 20px;">
-                            <li>Dark mode support</li>
-                            <li>Accessibility improvements</li>
-                            <li>Modern component library</li>
-                        </ul>
-                    </div>
-                </div>
+            <div class="task-form">
+                <input type="text" id="task-title" placeholder="Task title" />
+                <select id="task-priority">
+                    <option value="low">Low Priority</option>
+                    <option value="medium" selected>Medium Priority</option>
+                    <option value="high">High Priority</option>
+                </select>
+                <button onclick="addTask()">Add Task</button>
             </div>
+
+            <ul class="task-list" id="task-list">
+                <li class="loading">Loading tasks...</li>
+            </ul>
         </div>
 
+        <!-- Dev 1's Feature: Advanced Search -->
+        <div class="feature-section" id="search-section" data-feature="advanced_search">
+            <h2>
+                Advanced Search
+                <span class="feature-label" id="search-label">Loading...</span>
+            </h2>
+            <p style="color: #666; margin-bottom: 15px;">
+                <strong>Dev 1's Feature</strong> - Slow developer (14 days), pushes to main daily
+            </p>
+
+            <div class="search-box">
+                <input type="text" id="search-query" placeholder="Search tasks..." />
+                <select id="search-status">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                </select>
+                <select id="search-priority">
+                    <option value="">All Priorities</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <button class="btn btn-primary" onclick="searchTasks()">Search</button>
+            </div>
+
+            <div id="search-results"></div>
+        </div>
+
+        <!-- Dev 2's Feature: Export CSV -->
+        <div class="feature-section" id="export-section" data-feature="export_csv">
+            <h2>
+                Export to CSV
+                <span class="feature-label" id="export-label">Loading...</span>
+            </h2>
+            <p style="color: #666; margin-bottom: 15px;">
+                <strong>Dev 2's Feature</strong> - Fast developer (2 days), ships to production quickly!
+            </p>
+
+            <button class="btn btn-success" onclick="exportCSV()">Download Tasks as CSV</button>
+            <button class="btn btn-primary" onclick="previewCSV()" style="margin-left: 10px;">Preview CSV</button>
+
+            <div id="export-preview" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Feature Information -->
         <div class="info-panel">
-            <h3>Environment Information</h3>
-            <ul id="feature-list">
+            <h3>Feature Flags Status</h3>
+            <ul id="feature-info">
                 <li>Loading feature configuration...</li>
             </ul>
         </div>
     </div>
 
-    <script src="js/featureFlags.js"></script>
     <script>
-        // Wait for feature flags to load
-        async function updateUI() {
-            // Wait for feature flags to initialize
-            await new Promise(resolve => setTimeout(resolve, 500));
+        const API_BASE = 'http://localhost:3005/api';
+        let featureFlags = { features: {} };
+        let tasks = [];
 
-            // Update environment badge
-            const env = window.featureFlags.getEnvironment();
-            const envBadge = document.getElementById('env-badge');
-            envBadge.textContent = env.toUpperCase();
-            envBadge.className = 'env-badge env-' + env;
+        // Initialize app
+        async function init() {
+            await loadFeatureFlags();
+            await loadTasks();
+            updateUI();
+        }
 
-            // Update feature cards
-            document.querySelectorAll('.feature-card').forEach(card => {
-                const featureName = card.getAttribute('data-feature');
-                const badge = card.querySelector('.status-badge');
-                const isEnabled = window.featureFlags.isEnabled(featureName);
+        // Load feature flags from API
+        async function loadFeatureFlags() {
+            try {
+                const response = await fetch(`${API_BASE}/feature-flags`);
+                featureFlags = await response.json();
+                console.log('Feature flags loaded:', featureFlags);
 
-                if (isEnabled) {
-                    card.classList.add('feature-enabled');
-                    card.classList.remove('feature-disabled');
-                    badge.textContent = 'ENABLED';
-                    badge.className = 'status-badge status-enabled';
-                } else {
-                    card.classList.add('feature-disabled');
-                    card.classList.remove('feature-enabled');
-                    badge.textContent = 'DISABLED';
-                    badge.className = 'status-badge status-disabled';
-                }
-            });
+                // Update environment badge
+                const env = featureFlags.environment || 'production';
+                const envBadge = document.getElementById('env-badge');
+                envBadge.textContent = env.toUpperCase();
+                envBadge.className = 'env-badge env-' + env;
 
-            // Update feature list
-            const featureList = document.getElementById('feature-list');
-            const allFeatures = window.featureFlags.getAllFeatures();
-            const enabledFeatures = window.featureFlags.getEnabledFeatures();
+                // Update feature sections
+                updateFeatureSection('advanced_search', 'search');
+                updateFeatureSection('export_csv', 'export');
 
-            if (Object.keys(allFeatures).length === 0) {
-                featureList.innerHTML = '<li>No features configured</li>';
+                // Update feature info
+                updateFeatureInfo();
+            } catch (error) {
+                console.error('Error loading feature flags:', error);
+                document.getElementById('feature-info').innerHTML =
+                    `<li class="error">Error: Could not connect to API. Make sure the API server is running on port 3005.</li>`;
+            }
+        }
+
+        // Update feature section visibility
+        function updateFeatureSection(featureName, sectionPrefix) {
+            const section = document.getElementById(`${sectionPrefix}-section`);
+            const label = document.getElementById(`${sectionPrefix}-label`);
+            const feature = featureFlags.features?.[featureName];
+
+            if (feature && feature.enabled) {
+                section.classList.add('feature-enabled');
+                section.classList.remove('feature-disabled');
+                label.textContent = 'ENABLED';
+                label.className = 'feature-label enabled';
+            } else {
+                section.classList.add('feature-disabled');
+                section.classList.remove('feature-enabled');
+                label.textContent = 'DISABLED';
+                label.className = 'feature-label disabled';
+            }
+        }
+
+        // Update feature info panel
+        function updateFeatureInfo() {
+            const infoList = document.getElementById('feature-info');
+            const features = featureFlags.features || {};
+
+            let html = `<li><strong>Environment:</strong> ${featureFlags.environment}</li>`;
+            html += `<li><strong>Total Features:</strong> ${Object.keys(features).length}</li>`;
+
+            const enabled = Object.keys(features).filter(k => features[k].enabled);
+            html += `<li><strong>Enabled Features:</strong> ${enabled.length}</li>`;
+
+            if (enabled.length > 0) {
+                html += `<li><strong>Active:</strong> ${enabled.join(', ')}</li>`;
+            }
+
+            infoList.innerHTML = html;
+        }
+
+        // Load tasks from API
+        async function loadTasks() {
+            try {
+                const response = await fetch(`${API_BASE}/tasks`);
+                const data = await response.json();
+                tasks = data.tasks || [];
+                renderTasks(tasks);
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                document.getElementById('task-list').innerHTML =
+                    `<li class="error">Error loading tasks. Make sure API is running.</li>`;
+            }
+        }
+
+        // Render tasks
+        function renderTasks(tasksToRender) {
+            const taskList = document.getElementById('task-list');
+
+            if (tasksToRender.length === 0) {
+                taskList.innerHTML = '<li style="padding: 20px; text-align: center; color: #666;">No tasks yet. Add one above!</li>';
                 return;
             }
 
-            featureList.innerHTML = `
-                <li><strong>Environment:</strong> ${env.toUpperCase()}</li>
-                <li><strong>Total Features:</strong> ${Object.keys(allFeatures).length}</li>
-                <li><strong>Enabled Features:</strong> ${enabledFeatures.length}</li>
-                <li><strong>Active:</strong> ${enabledFeatures.join(', ') || 'None'}</li>
-            `;
+            taskList.innerHTML = tasksToRender.map(task => `
+                <li class="task-item ${task.status === 'completed' ? 'completed' : ''}">
+                    <h4>${task.title}</h4>
+                    <p>${task.description || 'No description'}</p>
+                    <div class="task-meta">
+                        <span>Priority: <strong>${task.priority}</strong></span>
+                        <span>Status: <strong>${task.status}</strong></span>
+                        ${task.tags && task.tags.length > 0 ?
+                            task.tags.map(tag => `<span class="tag">${tag}</span>`).join('') :
+                            ''
+                        }
+                    </div>
+                </li>
+            `).join('');
         }
 
-        // Update UI when page loads
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', updateUI);
-        } else {
-            updateUI();
+        // Add new task
+        async function addTask() {
+            const title = document.getElementById('task-title').value;
+            const priority = document.getElementById('task-priority').value;
+
+            if (!title) {
+                alert('Please enter a task title');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, priority, tags: ['trunk-based'] })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('task-title').value = '';
+                    await loadTasks();
+                }
+            } catch (error) {
+                console.error('Error adding task:', error);
+                alert('Error adding task. Make sure API is running.');
+            }
         }
+
+        // Search tasks (Dev 1's feature)
+        async function searchTasks() {
+            if (!featureFlags.features?.advanced_search?.enabled) {
+                alert('Advanced Search is disabled in this environment');
+                return;
+            }
+
+            const query = document.getElementById('search-query').value;
+            const status = document.getElementById('search-status').value;
+            const priority = document.getElementById('search-priority').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/search`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, status, priority })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const resultsDiv = document.getElementById('search-results');
+                    resultsDiv.innerHTML = `
+                        <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 6px;">
+                            <strong>Search Results: ${data.count} tasks found</strong>
+                        </div>
+                    `;
+                    renderTasks(data.results);
+                }
+            } catch (error) {
+                console.error('Error searching:', error);
+                alert('Error searching tasks');
+            }
+        }
+
+        // Export CSV (Dev 2's feature)
+        async function exportCSV() {
+            if (!featureFlags.features?.export_csv?.enabled) {
+                alert('Export CSV is disabled in this environment');
+                return;
+            }
+
+            try {
+                window.open(`${API_BASE}/export/csv`, '_blank');
+            } catch (error) {
+                console.error('Error exporting CSV:', error);
+                alert('Error exporting CSV');
+            }
+        }
+
+        // Preview CSV (Dev 2's feature)
+        async function previewCSV() {
+            if (!featureFlags.features?.export_csv?.enabled) {
+                alert('Export CSV is disabled in this environment');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/export/preview`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const previewDiv = document.getElementById('export-preview');
+                    previewDiv.innerHTML = `
+                        <div style="background: white; padding: 15px; border-radius: 6px; margin-top: 15px;">
+                            <strong>CSV Preview (${data.taskCount} tasks):</strong>
+                            <pre style="margin-top: 10px; font-size: 12px; overflow-x: auto;">${data.preview}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error previewing CSV:', error);
+                alert('Error previewing CSV');
+            }
+        }
+
+        // Update UI
+        function updateUI() {
+            // UI updates are handled by individual functions
+        }
+
+        // Initialize on page load
+        init();
     </script>
 </body>
 </html>

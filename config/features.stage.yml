@@ -1,0 +1,37 @@
+environment: stage
+last_updated: "2025-01-08T00:00:00Z"
+version: "1.0.0"
+
+features:
+  # Dev 1's Feature - Advanced Search (In Development)
+  advanced_search:
+    enabled: true
+    type: release_toggle
+    lifecycle: short_lived_dynamic
+    developer: dev1
+    status: in_development
+    description: "Advanced task search with filters, tags, and date ranges"
+    jira_ticket: "TASK-101"
+    created_date: "2025-01-01"
+    target_completion: "2025-01-14"
+    notes: "Enable in stage for testing incomplete work. Dev1 pushing daily to main."
+
+  # Dev 2's Feature - Export CSV (Completed Fast)
+  export_csv:
+    enabled: true
+    type: release_toggle
+    lifecycle: short_lived_dynamic
+    developer: dev2
+    status: completed
+    description: "Export tasks to CSV format with custom column selection"
+    jira_ticket: "TASK-102"
+    created_date: "2025-01-01"
+    completed_date: "2025-01-02"
+    notes: "Completed in 2 days. Ready for production deployment."
+
+# Metadata
+metadata:
+  environment_description: "Stage environment - all features enabled for testing"
+  auto_cleanup_policy: "Remove toggles 30 days after feature is live in production"
+  review_frequency: "Weekly"
+  last_reviewed_by: "DevOps Team"

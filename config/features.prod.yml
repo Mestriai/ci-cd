@@ -1,0 +1,45 @@
+environment: production
+last_updated: "2025-01-08T00:00:00Z"
+version: "1.0.0"
+
+features:
+  # Dev 1's Feature - Advanced Search (NOT READY)
+  advanced_search:
+    enabled: false  # ❌ Still in development, not ready for production
+    type: release_toggle
+    lifecycle: short_lived_dynamic
+    developer: dev1
+    status: in_development
+    description: "Advanced task search with filters, tags, and date ranges"
+    jira_ticket: "TASK-101"
+    created_date: "2025-01-01"
+    target_completion: "2025-01-14"
+    notes: "Disabled in production. Dev1 still working on it. Will enable on Day 14."
+    approval_required: true
+    approved_by: null
+    approved_date: null
+
+  # Dev 2's Feature - Export CSV (SHIPPED!)
+  export_csv:
+    enabled: true  # ✅ Completed and ready for production
+    type: release_toggle
+    lifecycle: short_lived_dynamic
+    developer: dev2
+    status: live
+    description: "Export tasks to CSV format with custom column selection"
+    jira_ticket: "TASK-102"
+    created_date: "2025-01-01"
+    completed_date: "2025-01-02"
+    deployed_to_prod: "2025-01-03"
+    notes: "Shipped to production on Day 3. Working perfectly."
+    approval_required: true
+    approved_by: "Product Manager"
+    approved_date: "2025-01-03"
+
+# Metadata
+metadata:
+  environment_description: "Production environment - only approved, tested features enabled"
+  auto_cleanup_policy: "Remove toggles 30 days after feature is live and stable"
+  review_frequency: "Before each deployment"
+  last_reviewed_by: "Release Manager"
+  deployment_policy: "Require manual approval for all feature toggle changes"
