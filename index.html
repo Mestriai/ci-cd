@@ -347,12 +347,14 @@
             updateUI();
         }
 
-        // Load feature flags from API
+        // Load feature flags from local JSON file (converted from YAML during deployment)
+        // This allows the frontend to work on GitHub Pages without a backend
         async function loadFeatureFlags() {
             try {
-                const response = await fetch(`${API_BASE}/feature-flags`);
+                // Try to load from local JSON file first (for GitHub Pages deployment)
+                const response = await fetch('config/features.json');
                 featureFlags = await response.json();
-                console.log('Feature flags loaded:', featureFlags);
+                console.log('Feature flags loaded from config/features.json:', featureFlags);
 
                 // Update environment badge
                 const env = featureFlags.environment || 'production';
@@ -368,8 +370,16 @@
                 updateFeatureInfo();
             } catch (error) {
                 console.error('Error loading feature flags:', error);
+                // Fallback to default production config
+                featureFlags = {
+                    environment: 'production',
+                    features: {
+                        advanced_search: { enabled: false },
+                        export_csv: { enabled: false }
+                    }
+                };
                 document.getElementById('feature-info').innerHTML =
-                    `<li class="error">Error: Could not connect to API. Make sure the API server is running on port 3005.</li>`;
+                    `<li class="error">Error: Could not load feature flags. Using default configuration.</li>`;
             }
         }
 
@@ -410,7 +420,7 @@
             infoList.innerHTML = html;
         }
 
-        // Load tasks from API
+        // Load tasks from API (requires local API server for full functionality)
         async function loadTasks() {
             try {
                 const response = await fetch(`${API_BASE}/tasks`);
@@ -418,9 +428,37 @@
                 tasks = data.tasks || [];
                 renderTasks(tasks);
             } catch (error) {
-                console.error('Error loading tasks:', error);
-                document.getElementById('task-list').innerHTML =
-                    `<li class="error">Error loading tasks. Make sure API is running.</li>`;
+                console.warn('API not available. Using demo mode without backend.');
+                // Demo tasks for GitHub Pages deployment (no backend)
+                tasks = [
+                    {
+                        id: 1,
+                        title: 'Setup trunk-based development workflow',
+                        description: 'Configure YAML feature flags and deployment pipeline',
+                        priority: 'high',
+                        status: 'completed',
+                        tags: ['devops', 'setup']
+                    },
+                    {
+                        id: 2,
+                        title: 'Implement advanced search feature',
+                        description: 'Dev 1 working on this (14 days)',
+                        priority: 'medium',
+                        status: 'in_progress',
+                        tags: ['feature', 'dev1']
+                    },
+                    {
+                        id: 3,
+                        title: 'Ship CSV export to production',
+                        description: 'Dev 2 completed this (2 days) - now live!',
+                        priority: 'high',
+                        status: 'completed',
+                        tags: ['feature', 'dev2', 'shipped']
+                    }
+                ];
+                renderTasks(tasks);
+                document.getElementById('task-list').insertAdjacentHTML('afterbegin',
+                    '<div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; margin-bottom: 15px;"><strong>Demo Mode:</strong> API not running. Showing sample data. Start API server for full functionality.</div>');
             }
         }
 
@@ -474,14 +512,14 @@
                 }
             } catch (error) {
                 console.error('Error adding task:', error);
-                alert('Error adding task. Make sure API is running.');
+                alert('API not available. This feature requires the API server running on http://localhost:3005\n\nTo start the API:\n  cd api\n  npm install\n  npm start');
             }
         }
 
         // Search tasks (Dev 1's feature)
         async function searchTasks() {
             if (!featureFlags.features?.advanced_search?.enabled) {
-                alert('Advanced Search is disabled in this environment');
+                alert('Advanced Search is disabled in this environment.\n\nThis feature is:\n- ENABLED in Stage (for testing)\n- DISABLED in Production (not ready yet)');
                 return;
             }
 
@@ -516,7 +554,7 @@
         // Export CSV (Dev 2's feature)
         async function exportCSV() {
             if (!featureFlags.features?.export_csv?.enabled) {
-                alert('Export CSV is disabled in this environment');
+                alert('Export CSV is disabled in this environment.\n\nThis feature is:\n- ENABLED in Stage\n- ENABLED in Production (shipped!)');
                 return;
             }
 
@@ -524,14 +562,14 @@
                 window.open(`${API_BASE}/export/csv`, '_blank');
             } catch (error) {
                 console.error('Error exporting CSV:', error);
-                alert('Error exporting CSV');
+                alert('API not available. This feature requires the API server.\n\nTo start the API:\n  cd api\n  npm install\n  npm start');
             }
         }
 
         // Preview CSV (Dev 2's feature)
         async function previewCSV() {
             if (!featureFlags.features?.export_csv?.enabled) {
-                alert('Export CSV is disabled in this environment');
+                alert('Export CSV is disabled in this environment.\n\nThis feature is:\n- ENABLED in Stage\n- ENABLED in Production (shipped!)');
                 return;
             }
 
