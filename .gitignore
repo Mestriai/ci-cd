@@ -4,6 +4,7 @@ api/node_modules/
 
 # Build artifacts
 _site/
+_local/
 dist/
 build/
 

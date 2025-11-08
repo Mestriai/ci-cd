@@ -79,12 +79,12 @@ Open `index.html` in your browser or serve it with a local server:
 
 ```bash
 # Option 1: Simple Python server
-python3 -m http.server 8000
+python3 -m http.server 8001
 
 # Option 2: Node.js server
-npx http-server -p 8000
+npx http-server -p 8001
 
-# Then visit: http://localhost:8000
+# Then visit: http://localhost:8001
 ```
 
 ### 3. See Feature Flags in Action

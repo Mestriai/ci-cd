@@ -32,11 +32,21 @@ Server runs at: **http://localhost:3005**
 
 ### 2. Open the Web App
 
-Open `index.html` in your browser or serve it locally:
-
+**Option A: Simple (single environment)**
 ```bash
-python3 -m http.server 8000
-# Then visit: http://localhost:8000
+python3 -m http.server 8001
+# Then visit: http://localhost:8001
+```
+
+**Option B: Full local setup (stage + production)**
+```bash
+./local-dev.sh  # Build local environments
+cd _local && python3 -m http.server 8001
+
+# Then visit:
+# - http://localhost:8001/           (environment selector)
+# - http://localhost:8001/stage/     (all features enabled)
+# - http://localhost:8001/production/ (selective features)
 ```
 
 ### 3. See Feature Flags in Action
