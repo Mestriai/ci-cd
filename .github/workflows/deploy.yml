@@ -13,9 +13,13 @@ permissions:
   id-token: write
 
 jobs:
-  # Job 1: Build the application artifact
-  build:
+  # Job 1: Build and Deploy Stage
+  build-and-deploy-stage:
     runs-on: ubuntu-latest
+    environment:
+      name: Stage
+      url: ${{ steps.deployment.outputs.page_url }}stage/
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,24 +28,40 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      # Build the site with both stage and production directories
-      - name: Build site structure
+      # Download current Pages deployment to preserve production
+      - name: Download existing deployment (if exists)
+        continue-on-error: true
         run: |
-          mkdir -p _site/stage _site/production
-          # Copy content to stage directory
+          # Try to download current pages deployment
+          curl -L -o current-site.tar.gz "${{ steps.pages.outputs.base_url }}/artifacts.tar.gz" 2>/dev/null || true
+          if [ -f current-site.tar.gz ]; then
+            mkdir -p _site
+            tar -xzf current-site.tar.gz -C _site 2>/dev/null || true
+            rm current-site.tar.gz
+          fi
+
+      - name: Build Stage environment
+        run: |
+          # Create stage directory
+          mkdir -p _site/stage
+
+          # Copy all content to stage
           cp -r ./* _site/stage/ 2>/dev/null || true
-          # Remove the _site directory from stage to avoid recursion
+
+          # Remove recursion artifacts
           rm -rf _site/stage/_site
 
-          # Replace stage config with the correct environment config
+          # Apply stage-specific feature flag config
+          mkdir -p _site/stage/config
           cp config/features.stage.json _site/stage/config/features.json 2>/dev/null || true
-          # Create landing page
+
+          # Create/Update landing page
           cat > _site/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
           <head>
             <meta charset="utf-8">
-            <title>Mestri Test - Environments</title>
+            <title>CI/CD Environments - Mestri AI</title>
             <style>
               body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
               h1 { color: #333; }
@@ -56,39 +76,33 @@ jobs:
             </style>
           </head>
           <body>
-            <h1>Mestri Test - Deployment Environments</h1>
+            <h1>Mestri AI - CI/CD Environments</h1>
             <ul class="env-links">
               <li><a href="./stage/" class="stage">Stage Environment</a></li>
               <li><a href="./production/" class="production">Production Environment</a></li>
             </ul>
+            <p style="color: #666; margin-top: 30px;">
+              <small>Stage deploys automatically. Production requires approval.</small>
+            </p>
           </body>
           </html>
           EOF
 
-      - name: Upload artifact (Stage only)
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           name: github-pages-stage
           path: '_site'
 
-  # Job 2: Deploy to Stage Environment
-  deploy-stage:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: Stage
-      url: ${{ steps.deployment.outputs.page_url }}stage/
-
-    steps:
-      - name: Deploy to Pages (Stage)
+      - name: Deploy to Pages
         id: deployment
         uses: actions/deploy-pages@v4
         with:
           artifact_name: github-pages-stage
 
-  # Job 3: Update production directory and redeploy
-  deploy-production:
-    needs: deploy-stage
+  # Job 2: Build and Deploy Production (after Stage)
+  build-and-deploy-production:
+    needs: build-and-deploy-stage
     runs-on: ubuntu-latest
     environment:
       name: Production
@@ -102,26 +116,40 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      # Rebuild with production content added
-      - name: Build with production
+      # Download current deployment to preserve stage
+      - name: Download existing deployment
+        continue-on-error: true
         run: |
-          mkdir -p _site/stage _site/production
-          # Copy content to both directories
-          cp -r ./* _site/stage/ 2>/dev/null || true
-          cp -r ./* _site/production/ 2>/dev/null || true
-          # Remove the _site directory from copies to avoid recursion
-          rm -rf _site/stage/_site _site/production/_site
+          # Try to download current pages deployment
+          curl -L -o current-site.tar.gz "${{ steps.pages.outputs.base_url }}/artifacts.tar.gz" 2>/dev/null || true
+          if [ -f current-site.tar.gz ]; then
+            mkdir -p _site
+            tar -xzf current-site.tar.gz -C _site 2>/dev/null || true
+            rm current-site.tar.gz
+          fi
 
-          # Apply environment-specific feature flag configs
-          cp config/features.stage.json _site/stage/config/features.json 2>/dev/null || true
+      - name: Build Production environment
+        run: |
+          # Create production directory
+          mkdir -p _site/production
+
+          # Copy all content to production
+          cp -r ./* _site/production/ 2>/dev/null || true
+
+          # Remove recursion artifacts
+          rm -rf _site/production/_site
+
+          # Apply production-specific feature flag config
+          mkdir -p _site/production/config
           cp config/features.production.json _site/production/config/features.json 2>/dev/null || true
-          # Recreate landing page
+
+          # Update landing page
           cat > _site/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
           <head>
             <meta charset="utf-8">
-            <title>Mestri Test - Environments</title>
+            <title>CI/CD Environments - Mestri AI</title>
             <style>
               body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
               h1 { color: #333; }
@@ -136,22 +164,25 @@ jobs:
             </style>
           </head>
           <body>
-            <h1>Mestri Test - Deployment Environments</h1>
+            <h1>Mestri AI - CI/CD Environments</h1>
             <ul class="env-links">
               <li><a href="./stage/" class="stage">Stage Environment</a></li>
               <li><a href="./production/" class="production">Production Environment</a></li>
             </ul>
+            <p style="color: #666; margin-top: 30px;">
+              <small>Stage deploys automatically. Production requires approval.</small>
+            </p>
           </body>
           </html>
           EOF
 
-      - name: Upload artifact (Stage + Production)
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           name: github-pages-production
           path: '_site'
 
-      - name: Deploy to Pages (Production)
+      - name: Deploy to Pages
         id: deployment
         uses: actions/deploy-pages@v4
         with:
