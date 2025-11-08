@@ -32,6 +32,9 @@ jobs:
           cp -r ./* _site/stage/ 2>/dev/null || true
           # Remove the _site directory from stage to avoid recursion
           rm -rf _site/stage/_site
+
+          # Replace stage config with the correct environment config
+          cp config/features.stage.json _site/stage/config/features.json 2>/dev/null || true
           # Create landing page
           cat > _site/index.html << 'EOF'
           <!DOCTYPE html>
@@ -108,6 +111,10 @@ jobs:
           cp -r ./* _site/production/ 2>/dev/null || true
           # Remove the _site directory from copies to avoid recursion
           rm -rf _site/stage/_site _site/production/_site
+
+          # Apply environment-specific feature flag configs
+          cp config/features.stage.json _site/stage/config/features.json 2>/dev/null || true
+          cp config/features.production.json _site/production/config/features.json 2>/dev/null || true
           # Recreate landing page
           cat > _site/index.html << 'EOF'
           <!DOCTYPE html>
