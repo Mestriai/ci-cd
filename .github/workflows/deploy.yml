@@ -13,48 +13,117 @@ permissions:
   id-token: write
 
 jobs:
-  # Job 1: Build the application artifact
-  build:
+  # Job 1: Build and deploy to Stage
+  deploy-stage:
     runs-on: ubuntu-latest
+    environment:
+      name: Stage
+      url: ${{ steps.pages.outputs.base_url }}/stage/
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Configure GitHub Pages
         id: pages
         uses: actions/configure-pages@v5
-        
-      # The 'path: ./' tells the action to package all files in the root folder.
-      - name: Upload Artifact
+
+      # Create stage directory structure
+      - name: Prepare Stage deployment
+        run: |
+          mkdir -p _site/stage
+          cp -r ./* _site/stage/ 2>/dev/null || true
+          # Create index redirect at root for easy navigation
+          cat > _site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Mestri Test - Environments</title>
+            <style>
+              body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+              h1 { color: #333; }
+              .env-links { list-style: none; padding: 0; }
+              .env-links li { margin: 15px 0; }
+              .env-links a { display: inline-block; padding: 10px 20px; background: #0366d6; color: white; text-decoration: none; border-radius: 5px; }
+              .env-links a:hover { background: #0256b9; }
+              .stage { background: #f6a623; }
+              .stage:hover { background: #e09412; }
+            </style>
+          </head>
+          <body>
+            <h1>Mestri Test - Deployment Environments</h1>
+            <ul class="env-links">
+              <li><a href="./stage/" class="stage">Stage Environment</a></li>
+              <li><a href="./production/">Production Environment</a></li>
+            </ul>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload Stage artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './'
+          path: '_site'
 
-  # Job 2: Deploy to Stage Environment
-  deploy-stage:
-    needs: build
-    runs-on: ubuntu-latest
-    # Links this job to the 'Stage' environment configured in settings
-    environment:
-      name: Stage
-      url: ${{ steps.deployment.outputs.page_url }} # Outputs the Stage URL
-      
-    steps:
-      - name: Deploy to Pages (Stage)
+      - name: Deploy to GitHub Pages (Stage)
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # Job 3: Deploy to Production Environment (Requires Manual Approval)
+  # Job 2: Deploy to Production (requires manual approval and deploys to /production path)
   deploy-production:
-    needs: deploy-stage # Ensures Stage deployment is complete first
+    needs: deploy-stage
     runs-on: ubuntu-latest
-    # Links this job to the 'Production' environment. Manual approval is inherited
-    # from the environment settings configured in Step 2.
     environment:
       name: Production
-      url: ${{ steps.deployment.outputs.page_url }} # Outputs the Production URL
-      
+      url: ${{ steps.pages.outputs.base_url }}/production/
+
     steps:
-      - name: Deploy to Pages (Production)
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      # Download the current Pages deployment and add production
+      - name: Prepare Production deployment
+        run: |
+          mkdir -p _site/production
+          cp -r ./* _site/production/ 2>/dev/null || true
+          # Recreate the index page (in case it doesn't exist from stage)
+          cat > _site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Mestri Test - Environments</title>
+            <style>
+              body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+              h1 { color: #333; }
+              .env-links { list-style: none; padding: 0; }
+              .env-links li { margin: 15px 0; }
+              .env-links a { display: inline-block; padding: 10px 20px; background: #0366d6; color: white; text-decoration: none; border-radius: 5px; }
+              .env-links a:hover { background: #0256b9; }
+              .stage { background: #f6a623; }
+              .stage:hover { background: #e09412; }
+            </style>
+          </head>
+          <body>
+            <h1>Mestri Test - Deployment Environments</h1>
+            <ul class="env-links">
+              <li><a href="./stage/" class="stage">Stage Environment</a></li>
+              <li><a href="./production/">Production Environment</a></li>
+            </ul>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload Production artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Deploy to GitHub Pages (Production)
         id: deployment
         uses: actions/deploy-pages@v4
