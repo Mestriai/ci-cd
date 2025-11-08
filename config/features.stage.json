@@ -1,0 +1,29 @@
+{
+  "environment": "stage",
+  "features": {
+    "feature_a": {
+      "enabled": true,
+      "description": "Developer 1's feature - New user dashboard",
+      "owner": "dev1"
+    },
+    "feature_b": {
+      "enabled": true,
+      "description": "Developer 2's feature - Advanced analytics",
+      "owner": "dev2"
+    },
+    "feature_c": {
+      "enabled": true,
+      "description": "Developer 3's feature - Real-time notifications",
+      "owner": "dev3"
+    },
+    "experimental_ui": {
+      "enabled": true,
+      "description": "Experimental UI redesign",
+      "owner": "design-team"
+    }
+  },
+  "metadata": {
+    "lastUpdated": "2025-11-08",
+    "notes": "Stage environment - all features enabled for testing"
+  }
+}
