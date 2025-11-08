@@ -28,32 +28,26 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      # Download current Pages deployment to preserve production
-      - name: Download existing deployment (if exists)
-        continue-on-error: true
+      - name: Build both environments (Stage active, Production placeholder)
         run: |
-          # Try to download current pages deployment
-          curl -L -o current-site.tar.gz "${{ steps.pages.outputs.base_url }}/artifacts.tar.gz" 2>/dev/null || true
-          if [ -f current-site.tar.gz ]; then
-            mkdir -p _site
-            tar -xzf current-site.tar.gz -C _site 2>/dev/null || true
-            rm current-site.tar.gz
-          fi
+          # Create both directories
+          mkdir -p _site/stage _site/production
 
-      - name: Build Stage environment
-        run: |
-          # Create stage directory
-          mkdir -p _site/stage
-
-          # Copy all content to stage
+          # Copy content to STAGE (this job owns stage)
           cp -r ./* _site/stage/ 2>/dev/null || true
-
-          # Remove recursion artifacts
           rm -rf _site/stage/_site
 
           # Apply stage-specific feature flag config
           mkdir -p _site/stage/config
           cp config/features.stage.json _site/stage/config/features.json 2>/dev/null || true
+
+          # Create PRODUCTION placeholder (will be updated by production job)
+          cp -r ./* _site/production/ 2>/dev/null || true
+          rm -rf _site/production/_site
+
+          # Apply production config to placeholder
+          mkdir -p _site/production/config
+          cp config/features.production.json _site/production/config/features.json 2>/dev/null || true
 
           # Create/Update landing page
           cat > _site/index.html << 'EOF'
@@ -116,27 +110,21 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      # Download current deployment to preserve stage
-      - name: Download existing deployment
-        continue-on-error: true
+      - name: Build both environments (Production active, Stage preserved)
         run: |
-          # Try to download current pages deployment
-          curl -L -o current-site.tar.gz "${{ steps.pages.outputs.base_url }}/artifacts.tar.gz" 2>/dev/null || true
-          if [ -f current-site.tar.gz ]; then
-            mkdir -p _site
-            tar -xzf current-site.tar.gz -C _site 2>/dev/null || true
-            rm current-site.tar.gz
-          fi
+          # Create both directories
+          mkdir -p _site/stage _site/production
 
-      - name: Build Production environment
-        run: |
-          # Create production directory
-          mkdir -p _site/production
+          # Copy content to STAGE (preserved from previous deployment)
+          cp -r ./* _site/stage/ 2>/dev/null || true
+          rm -rf _site/stage/_site
 
-          # Copy all content to production
+          # Apply stage config (keep stage working)
+          mkdir -p _site/stage/config
+          cp config/features.stage.json _site/stage/config/features.json 2>/dev/null || true
+
+          # Copy content to PRODUCTION (this job owns production)
           cp -r ./* _site/production/ 2>/dev/null || true
-
-          # Remove recursion artifacts
           rm -rf _site/production/_site
 
           # Apply production-specific feature flag config
